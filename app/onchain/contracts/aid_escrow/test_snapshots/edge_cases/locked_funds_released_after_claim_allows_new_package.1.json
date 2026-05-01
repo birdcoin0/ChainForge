@@ -582,6 +582,14 @@
                     },
                     {
                       "key": {
+                        "symbol": "claim_starts_at"
+                      },
+                      "val": {
+                        "u64": "1000000"
+                      }
+                    },
+                    {
+                      "key": {
                         "symbol": "created_at"
                       },
                       "val": {
@@ -688,6 +696,14 @@
                       },
                       "val": {
                         "i128": "10000000"
+                      }
+                    },
+                    {
+                      "key": {
+                        "symbol": "claim_starts_at"
+                      },
+                      "val": {
+                        "u64": "1000000"
                       }
                     },
                     {

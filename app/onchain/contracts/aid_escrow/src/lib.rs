@@ -62,6 +62,7 @@ pub struct Package {
     pub status: PackageStatus,
     pub created_at: u64,
     pub expires_at: u64,
+    pub claim_starts_at: u64,
     pub metadata: Map<Symbol, String>,
 }
 
@@ -99,6 +100,7 @@ pub enum Error {
     MismatchedArrays = 12,
     InsufficientSurplus = 13,
     ContractPaused = 14,
+    ClaimTooEarly = 15,
 }
 
 // --- Contract Events (indexer-friendly; stable topics & payloads) ---
@@ -113,7 +115,6 @@ pub struct EscrowFunded {
     pub timestamp: u64,
 }
 
-/// Emitted when a package is created. Actor = operator (admin or distributor).
 #[contractevent]
 pub struct PackageCreated {
     pub package_id: u64,
@@ -123,7 +124,6 @@ pub struct PackageCreated {
     pub timestamp: u64,
 }
 
-/// Emitted when a recipient claims a package. Actor = recipient.
 #[contractevent]
 pub struct PackageClaimed {
     pub package_id: u64,
@@ -133,7 +133,6 @@ pub struct PackageClaimed {
     pub timestamp: u64,
 }
 
-/// Emitted when admin disburses a package. Actor = admin.
 #[contractevent]
 pub struct PackageDisbursed {
     pub package_id: u64,
@@ -143,7 +142,6 @@ pub struct PackageDisbursed {
     pub timestamp: u64,
 }
 
-/// Emitted when a package is revoked/cancelled. Actor = admin.
 #[contractevent]
 pub struct PackageRevoked {
     pub package_id: u64,
@@ -153,7 +151,6 @@ pub struct PackageRevoked {
     pub timestamp: u64,
 }
 
-/// Emitted when funds are refunded to admin after expire/cancel. Actor = admin.
 #[contractevent]
 pub struct PackageRefunded {
     pub package_id: u64,
@@ -554,6 +551,12 @@ impl AidEscrow {
         env.storage().instance().set(&KEY_TOTAL_LOCKED, &locked_map);
 
         let created_at = env.ledger().timestamp();
+        let claim_starts_at = Self::resolve_claim_starts_at(&env, &metadata, created_at)?;
+
+        if claim_starts_at < created_at || (expires_at > 0 && claim_starts_at > expires_at) {
+            return Err(Error::InvalidState);
+        }
+
         let package = Package {
             id,
             recipient: recipient.clone(),
@@ -562,6 +565,7 @@ impl AidEscrow {
             status: PackageStatus::Created,
             created_at,
             expires_at,
+            claim_starts_at,
             metadata,
         };
 
@@ -642,6 +646,11 @@ impl AidEscrow {
             let recipient = recipients.get(i).unwrap();
             let amount = amounts.get(i).unwrap();
             let metadata = metadatas.get(i).unwrap();
+            let claim_starts_at = Self::resolve_claim_starts_at(&env, &metadata, created_at)?;
+
+            if claim_starts_at > expires_at {
+                return Err(Error::InvalidState);
+            }
 
             // Validate amount
             if amount <= 0 {
@@ -668,6 +677,7 @@ impl AidEscrow {
                 status: PackageStatus::Created,
                 created_at,
                 expires_at,
+                claim_starts_at,
                 metadata: metadata.clone(),
             };
 
@@ -727,7 +737,12 @@ impl AidEscrow {
             return Err(Error::PackageNotActive);
         }
 
-        if package.expires_at > 0 && env.ledger().timestamp() > package.expires_at {
+        let now = env.ledger().timestamp();
+        if now < package.claim_starts_at {
+            return Err(Error::ClaimTooEarly);
+        }
+
+        if package.expires_at > 0 && now > package.expires_at {
             package.status = PackageStatus::Expired;
             env.storage().persistent().set(&key, &package);
             return Err(Error::PackageExpired);
@@ -767,7 +782,7 @@ impl AidEscrow {
             recipient: package.recipient.clone(),
             amount: package.amount,
             actor: package.recipient.clone(),
-            timestamp: env.ledger().timestamp(),
+            timestamp: now,
         }
         .publish(&env);
 
@@ -1121,6 +1136,38 @@ impl AidEscrow {
 
         locked_map.set(token.clone(), new_locked);
         env.storage().instance().set(&KEY_TOTAL_LOCKED, &locked_map);
+    }
+
+    fn resolve_claim_starts_at(
+        env: &Env,
+        metadata: &Map<Symbol, String>,
+        created_at: u64,
+    ) -> Result<u64, Error> {
+        let key = Symbol::new(env, "claim_starts_at");
+        match metadata.get(key) {
+            Some(raw) => Self::parse_u64(raw).ok_or(Error::InvalidState),
+            None => Ok(created_at),
+        }
+    }
+
+    fn parse_u64(value: String) -> Option<u64> {
+        let len = value.len() as usize;
+        if len == 0 || len > 20 {
+            return None;
+        }
+
+        let mut bytes = [0u8; 20];
+        value.copy_into_slice(&mut bytes[..len]);
+
+        let mut out: u64 = 0;
+        for b in bytes[..len].iter() {
+            if !b.is_ascii_digit() {
+                return None;
+            }
+            out = out.checked_mul(10)?.checked_add((b - b'0') as u64)?;
+        }
+
+        Some(out)
     }
 
     /// Returns the total amount currently locked for a specific token.

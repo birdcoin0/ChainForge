@@ -5,7 +5,7 @@ use soroban_sdk::{
     symbol_short,
     testutils::{Address as _, Ledger, LedgerInfo},
     token::{Client as TokenClient, StellarAssetClient},
-    Address, Env, Map, Vec,
+    Address, Env, Map, Symbol, Vec,
 };
 
 // ---------------------------------------------------------------------------
@@ -227,6 +227,78 @@ mod claim {
         t.advance_time(3601);
         let result = t.client.try_claim(&id);
         assert_eq!(result, Err(Ok(Error::PackageExpired)));
+    }
+
+    #[test]
+    fn fails_when_claimed_too_early() {
+        let t = TestSetup::new();
+        let recipient = Address::generate(&t.env);
+        t.fund_contract(ONE_TOKEN);
+        let expires_at = t.now() + 3600;
+        let mut metadata = Map::new(&t.env);
+        // claim_starts_at = now + 1000
+        metadata.set(
+            Symbol::new(&t.env, "claim_starts_at"),
+            soroban_sdk::String::from_str(&t.env, &(t.now() + 1000).to_string()),
+        );
+        let id = t.client.create_package(
+            &t.admin,
+            &99u64,
+            &recipient,
+            &ONE_TOKEN,
+            &t.token,
+            &expires_at,
+            &metadata,
+        );
+        // Try to claim before claim_starts_at
+        let result = t.client.try_claim(&id);
+        assert_eq!(result, Err(Ok(Error::ClaimTooEarly)));
+        // Advance to claim_starts_at
+        t.advance_time(1000);
+        let result2 = t.client.try_claim(&id);
+        assert!(result2.is_ok());
+    }
+
+    #[test]
+    fn succeeds_when_claimed_at_exact_expiry_boundary() {
+        let t = TestSetup::new();
+        let recipient = Address::generate(&t.env);
+        t.fund_contract(ONE_TOKEN);
+        let now = t.now();
+        let expires_at = now + 1000;
+        let mut metadata = Map::new(&t.env);
+        // claim_starts_at = expires_at
+        metadata.set(
+            Symbol::new(&t.env, "claim_starts_at"),
+            soroban_sdk::String::from_str(&t.env, &expires_at.to_string()),
+        );
+        let id = t.client.create_package(
+            &t.admin,
+            &100u64,
+            &recipient,
+            &ONE_TOKEN,
+            &t.token,
+            &expires_at,
+            &metadata,
+        );
+        // Try to claim before claim_starts_at
+        let result = t.client.try_claim(&id);
+        assert_eq!(result, Err(Ok(Error::ClaimTooEarly)));
+        // Advance to claim_starts_at (== expires_at)
+        t.advance_time(1000);
+        let result2 = t.client.try_claim(&id);
+        // Should succeed (allowed to claim at expiry boundary)
+        assert!(result2.is_ok());
+    }
+
+    #[test]
+    fn default_claim_starts_at_is_created_at() {
+        let t = TestSetup::new();
+        let recipient = Address::generate(&t.env);
+        let id = t.create_default_package(&recipient, ONE_TOKEN);
+        // Should be claimable immediately
+        let result = t.client.try_claim(&id);
+        assert!(result.is_ok());
     }
 }
 
