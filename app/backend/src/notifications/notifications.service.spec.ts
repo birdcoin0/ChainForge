@@ -254,6 +254,7 @@ describe('NotificationsService', () => {
     });
 
     it('should return outboxId and jobId', async () => {
+      const result = await service.sendSms('+1234567890', 'Test SMS');
 
       expect(result).toEqual({ outboxId: mockOutbox.id, jobId: 'job-123' });
     });
