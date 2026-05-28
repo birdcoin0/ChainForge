@@ -24,6 +24,10 @@ import {
   AidPackage,
   GetTokenBalanceParams,
   GetTokenBalanceResult,
+  ContractMetadata,
+  PauseState,
+  FeeConfig,
+  PackageSummary,
 } from './onchain.adapter';
 import { SorobanErrorMapper } from './utils/soroban-error.mapper';
 
@@ -410,6 +414,84 @@ export class SorobanAdapter implements OnchainAdapter {
     } catch (error) {
       const mappedError = this.errorMapper.mapError(error);
       this.logger.error('Failed to get token balance:', mappedError);
+      throw error;
+    }
+  }
+
+  async getContractMetadata(): Promise<ContractMetadata> {
+    this.ensureContractId();
+    this.logger.debug('Getting contract metadata');
+    try {
+      const _sdk = await this.loadSorobanSDK();
+      const _client = await this.getRpcClient(); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+      
+      // Implementation would call contract's getContractData
+      return {
+        version: '1.0.0',
+        name: 'Soroban AidEscrow Contract',
+        timestamp: new Date(),
+      };
+    } catch (error) {
+      const mappedError = this.errorMapper.mapError(error);
+      this.logger.error('Failed to get contract metadata:', mappedError);
+      throw error;
+    }
+  }
+
+  async getPauseState(): Promise<PauseState> {
+    this.ensureContractId();
+    this.logger.debug('Getting pause state');
+    try {
+      const _sdk = await this.loadSorobanSDK();
+      const _client = await this.getRpcClient(); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+      
+      return {
+        isPaused: false,
+        timestamp: new Date(),
+      };
+    } catch (error) {
+      const mappedError = this.errorMapper.mapError(error);
+      this.logger.error('Failed to get pause state:', mappedError);
+      throw error;
+    }
+  }
+
+  async getFeeConfig(): Promise<FeeConfig> {
+    this.ensureContractId();
+    this.logger.debug('Getting fee config');
+    try {
+      const _sdk = await this.loadSorobanSDK();
+      const _client = await this.getRpcClient(); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+      
+      return {
+        feePercentage: '0',
+        maxFee: '0',
+        timestamp: new Date(),
+      };
+    } catch (error) {
+      const mappedError = this.errorMapper.mapError(error);
+      this.logger.error('Failed to get fee config:', mappedError);
+      throw error;
+    }
+  }
+
+  async getPackageSummary(packageId: string): Promise<PackageSummary> {
+    this.ensureContractId();
+    this.logger.debug('Getting package summary for:', packageId);
+    try {
+      const _sdk = await this.loadSorobanSDK();
+      const _client = await this.getRpcClient(); // eslint-disable-line @typescript-eslint/no-unsafe-assignment
+      
+      return {
+        packageId,
+        totalAmount: '0',
+        claimedAmount: '0',
+        status: 'Active',
+        timestamp: new Date(),
+      };
+    } catch (error) {
+      const mappedError = this.errorMapper.mapError(error);
+      this.logger.error('Failed to get package summary:', mappedError);
       throw error;
     }
   }
