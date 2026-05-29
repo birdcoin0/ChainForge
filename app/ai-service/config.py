@@ -3,9 +3,11 @@ Configuration module for Soter AI Service
 Handles environment variables and API key management
 """
 
+from pydantic import Literal, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import Optional
 import logging
+import os
 import secrets
 
 logger = logging.getLogger(__name__)
@@ -42,12 +44,15 @@ class Settings(BaseSettings):
     test_provider_mode: bool = False
     llm_timeout_seconds: int = 30
 
+    # Request throttling
+    request_rate_limit: str = "10/minute"
+
     # Circuit Breaker settings
     circuit_breaker_failure_threshold: int = 3
     circuit_breaker_recovery_timeout_seconds: float = 30.0
 
     # Application settings
-    app_env: str = "development"
+    app_env: Literal["development", "staging", "production", "test"] = "development"
     log_level: str = "INFO"
     host: str = "0.0.0.0"
     port: int = 8000
@@ -72,6 +77,32 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
         case_sensitive=False,
     )
+
+    @model_validator(mode="after")
+    def apply_environment_defaults(self) -> "Settings":
+        if self.app_env == "staging":
+            self.request_rate_limit = self.request_rate_limit or "5/minute"
+            self.ai_deterministic_mode = True
+            if not (self.openai_api_key or self.groq_api_key or self.test_provider_mode):
+                self.test_provider_mode = True
+
+        if self.app_env == "test":
+            self.request_rate_limit = self.request_rate_limit or "5/minute"
+            self.ai_deterministic_mode = True
+            if not (self.openai_api_key or self.groq_api_key or self.test_provider_mode):
+                self.test_provider_mode = True
+
+        if self.app_env == "production":
+            if "LOG_LEVEL" not in os.environ:
+                self.log_level = "WARNING"
+            if self.request_rate_limit == "10/minute":
+                self.request_rate_limit = "20/minute"
+            if not (self.openai_api_key or self.groq_api_key or self.test_provider_mode):
+                raise ValueError(
+                    "Production environment requires OPENAI_API_KEY, GROQ_API_KEY, or TEST_PROVIDER_MODE=true"
+                )
+
+        return self
 
     def validate_api_keys(self) -> bool:
         has_key = bool(self.openai_api_key or self.groq_api_key or self.test_provider_mode)
