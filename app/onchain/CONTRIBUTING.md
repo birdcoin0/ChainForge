@@ -1,6 +1,6 @@
 # Contributing to On-Chain Contracts
 
-Welcome! This document outlines how to contribute to Soter's on-chain contracts.
+Welcome! This document outlines how to contribute to ChainForge's on-chain contracts.
 
 ## 📋 Code Standards
 

@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document describes the expected behavior of claim timing validation on the Soter platform, specifically for Testnet ledgers. It covers claim start time boundaries, expiry boundaries, and auto-expiry logic.
+This document describes the expected behavior of claim timing validation on the ChainForge platform, specifically for Testnet ledgers. It covers claim start time boundaries, expiry boundaries, and auto-expiry logic.
 
 ## Onchain Contract Behavior (Soroban)
 

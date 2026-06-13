@@ -37,7 +37,7 @@ cargo install --locked stellar-cli
 From `app/onchain` create a `.env` file using `.env.example` as a template.
 
 ```bash
-cd /workspaces/Soter/app/onchain
+cd /workspaces/ChainForge/app/onchain
 cp .env.example .env
 ```
 
@@ -60,7 +60,7 @@ Build the contract to WebAssembly from the `app/onchain` directory.
 Using the Stellar CLI (recommended — handles target and optimizer automatically):
 
 ```bash
-cd /workspaces/Soter/app/onchain
+cd /workspaces/ChainForge/app/onchain
 stellar contract build
 ```
 
@@ -85,7 +85,7 @@ Expected output:
 Use the existing deploy script to publish the contract to Testnet.
 
 ```bash
-cd /workspaces/Soter/app/onchain
+cd /workspaces/ChainForge/app/onchain
 ./scripts/deploy.sh --network testnet
 ```
 
@@ -118,7 +118,7 @@ After a successful deploy, copy the printed Contract ID and record it as a new e
 After deploy, initialize the contract by setting the admin address.
 
 ```bash
-cd /workspaces/Soter/app/onchain
+cd /workspaces/ChainForge/app/onchain
 ./scripts/initialize.sh --contract "$CONTRACT_ID" --admin "$PUBLIC_KEY" --network testnet
 ```
 
@@ -131,7 +131,7 @@ Expected output should include a transaction result and a transaction hash.
 Verify the contract was initialized and the admin is set:
 
 ```bash
-cd /workspaces/Soter/app/onchain
+cd /workspaces/ChainForge/app/onchain
 ./scripts/testnet-invoke.sh get-admin --contract-id "$CONTRACT_ID" --source "$SECRET_KEY"
 ```
 

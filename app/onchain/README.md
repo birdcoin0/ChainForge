@@ -1,6 +1,6 @@
 # On-Chain Module (Soroban Contracts)
 
-This module contains Soroban smart contracts for Soter's on-chain escrow and claimable packages functionality.
+This module contains Soroban smart contracts for ChainForge's on-chain escrow and claimable packages functionality.
 
 ## 🌐 Deployed Contract (Testnet)
 

@@ -4,8 +4,8 @@ version = "0.1.0"
 edition = "2021"
 description = "Soroban contract for aid package escrow functionality"
 license = "MIT OR Apache-2.0"
-authors = ["Soter Team"]
-repository = "https://github.com/soter/aid-escrow"
+authors = ["ChainForge Team"]
+repository = "https://github.com/ChainForge/aid-escrow"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
