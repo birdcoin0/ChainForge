@@ -13,7 +13,7 @@ Check that these files were created:
 
 ```bash
 # Navigate to repository root
-cd C:\Users\g-ekoh\Desktop\Soter
+cd /workspaces/ChainForge
 
 # Add all new files
 git add .
