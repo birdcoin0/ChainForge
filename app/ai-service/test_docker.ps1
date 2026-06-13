@@ -281,7 +281,7 @@ function Test-Performance {
 
 # Main test execution
 function Invoke-Main {
-    Write-Host "🐳 Soter AI Service Docker Test Script" -ForegroundColor Cyan
+    Write-Host "🐳 ChainForge AI Service Docker Test Script" -ForegroundColor Cyan
     Write-Host "========================================" -ForegroundColor Cyan
     
     # Run cleanup at the end
