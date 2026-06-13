@@ -58,7 +58,7 @@ export const RedactionOverlay: React.FC<RedactionOverlayProps> = ({
   // Comparison mode styling
   const getComparisonStyle = () => {
     if (viewMode !== 'comparison') return {};
-    
+   
     return {
       backgroundColor: 'rgba(255, 0, 0, 0.1)',
       border: '2px dashed rgba(255, 0, 0, 0.5)',
@@ -71,7 +71,7 @@ export const RedactionOverlay: React.FC<RedactionOverlayProps> = ({
         const isSelected = selectedRegions.includes(region.id);
         const redactionStyle = getRedactionStyle(tool.type);
         const comparisonStyle = getComparisonStyle();
-        
+       
         return (
           <div
             key={region.id}
@@ -101,7 +101,7 @@ export const RedactionOverlay: React.FC<RedactionOverlayProps> = ({
             {isSelected && (
               <div className="absolute -top-2 -right-2 w-4 h-4 bg-yellow-400 rounded-full border-2 border-white" />
             )}
-            
+           
             {/* Region info tooltip when hovering */}
             {isSelected && (
               <div className="absolute bottom-full left-0 mb-2 p-2 bg-gray-900 text-white text-xs rounded shadow-lg whitespace-nowrap z-50">
@@ -223,7 +223,7 @@ export const PIIDetectionOverlay: React.FC<PIIDetectionOverlayProps> = ({
           <div className="absolute -top-1 -left-1 px-1 text-xs bg-gray-900 text-white rounded">
             {type}
           </div>
-          
+         
           {/* Confidence indicator */}
           <div className="absolute -bottom-1 -right-1 px-1 text-xs bg-gray-900 text-white rounded">
             {Math.round(confidence * 100)}%
