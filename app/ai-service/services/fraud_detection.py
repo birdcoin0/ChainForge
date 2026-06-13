@@ -55,7 +55,7 @@ def detect_fraud(claims: List[ClaimMetadata]) -> List[ClaimFraudResult]:
         return [ClaimFraudResult(claim_id=claims[0].claim_id, fraud_risk_score=0.0, is_flagged=False)]
 
     X = _vectorize(claims)
-    
+   
     # Add tiny random noise to prevent identical point degeneracy and zero-distance division issues
     np.random.seed(42)
     X_noise = X + np.random.normal(0, 1e-5, X.shape)
