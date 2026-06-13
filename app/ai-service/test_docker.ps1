@@ -217,7 +217,7 @@ function Test-GPU {
         
         # Test GPU build
         Write-Status "Testing GPU build..."
-        $result = docker build -t soter-ai-service:gpu-test --target production-gpu . 2>&1
+        $result = docker build -t chainforge-ai-service:gpu-test --target production-gpu . 2>&1
         if ($LASTEXITCODE -ne 0) {
             Write-Warning "GPU build failed, falling back to CPU"
             return $true
