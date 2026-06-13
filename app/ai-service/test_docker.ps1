@@ -1,4 +1,4 @@
-# Docker Test Script for Soter AI Service (PowerShell)
+# Docker Test Script for ChainForge AI Service (PowerShell)
 # This script tests the Docker build and deployment
 
 param(
