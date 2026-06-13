@@ -79,7 +79,7 @@ function Test-Build {
     
     try {
         Write-Status "Testing Docker build (development stage)..."
-        $result = docker build -t soter-ai-service:dev-test --target development . 2>&1
+        $result = docker build -t chainforge-ai-service:dev-test --target development . 2>&1
         if ($LASTEXITCODE -ne 0) {
             throw "Development build failed: $result"
         }
