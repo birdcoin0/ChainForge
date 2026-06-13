@@ -38,9 +38,9 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
           <h2 className="text-xl font-bold text-white mb-2">
             ChainForge is temporarily unavailable
           </h2>
-          
+         
           <p className="text-sm text-slate-400 mb-6 leading-relaxed">
-            The application shell encountered a critical fault before the page could finish loading. 
+            The application shell encountered a critical fault before the page could finish loading.
             Retry the request or refresh your environment.
           </p>
 
