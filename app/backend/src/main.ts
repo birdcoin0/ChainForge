@@ -32,7 +32,9 @@ async function bootstrap() {
     loadEnv({ path: envPath });
   }
 
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+  rawBody: true,
+});
 
   // Get logger instance
   const logger = app.get(LoggerService);
