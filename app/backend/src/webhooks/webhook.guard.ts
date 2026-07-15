@@ -46,7 +46,7 @@ export class WebhookGuard implements CanActivate {
 
     // 5. Compute expected HMAC
     const hmac = crypto.createHmac('sha256', secret);
-    hmac.update(rawBody);
+   hmac.update(timestampHeader + '.' + rawBody.toString());
     const computedSignature = hmac.digest('hex');
 
     // 6. Prevent timing attacks using timingSafeEqual
