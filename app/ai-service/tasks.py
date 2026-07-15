@@ -100,7 +100,15 @@ def update_task_status(
         'error': error,
         'updated_at': time.time()
     }
-
+def sign_payload(payload: dict, secret: str):
+    timestamp = str(int(time.time()))
+    payload_str = json.dumps(payload).encode('utf-8')
+    signature = hmac.new(
+        secret.encode('utf-8'),
+        timestamp.encode('utf-8') + b'.' + payload_str,
+        hashlib.sha256
+    ).hexdigest()
+    return signature, timestamp
 
 def send_webhook_notification(task_id: str, status: str, result: Any = None, error: str = None) -> None:
     """
