@@ -6,6 +6,9 @@ Handles background task processing for heavy inference
 import logging
 import uuid
 import time
+import hmac
+import hashlib
+import json
 from typing import Any, Dict, Optional
 from celery import Celery
 from celery.result import AsyncResult
@@ -131,8 +134,33 @@ def send_webhook_notification(task_id: str, status: str, result: Any = None, err
         import threading
         def send_notification():
             try:
+                # Prepare payload bytes for signing
+                payload_bytes = json.dumps(payload, separators=(',', ':')).encode('utf-8')
+                timestamp_str = str(int(time.time()))
+                
+                # Get the signing secret
+                secret = getattr(settings, 'webhook_signing_secret', '')
+                
+                # Compute signature: sha256 over raw body
+                # Format required: X-ChainForge-Signature: sha256=<hex>
+                signature = hmac.new(
+                    secret.encode('utf-8') if secret else b'',
+                    payload_bytes,
+                    hashlib.sha256
+                ).hexdigest()
+                
+                headers = {
+                    'Content-Type': 'application/json',
+                    'X-ChainForge-Signature': f"sha256={signature}",
+                    'X-ChainForge-Timestamp': timestamp_str
+                }
+                
                 with httpx.Client(timeout=10.0) as client:
-                    response = client.post(settings.backend_webhook_url, json=payload)
+                    response = client.post(
+                        settings.backend_webhook_url, 
+                        content=payload_bytes, 
+                        headers=headers
+                    )
                     if response.status_code >= 400:
                         logger.error(f"Webhook notification failed: {response.status_code} - {response.text}")
                     else:
@@ -165,8 +193,6 @@ def process_heavy_inference_impl(self, task_id: str, payload: Dict[str, Any]) ->
         
         # Extract task type from payload
         task_type = payload.get('type', 'inference')
-        
-        start_inference = time.time()
         
         # Simulate heavy processing (replace with actual AI inference logic)
         # In production, this would handle:
