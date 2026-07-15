@@ -21,6 +21,7 @@ import { RequestCorrelationMiddleware } from './middleware/request-correlation.m
 import { SecurityModule } from './common/security/security.module';
 import { CampaignsModule } from './campaigns/campaigns.module';
 import { APP_GUARD } from '@nestjs/core';
+import { WebhookController } from './webhooks/webhook.controller';
 import { ApiKeyGuard } from './common/guards/api-key.guard';
 import { RolesGuard } from './auth/roles.guard';
 import { ObservabilityModule } from './observability/observability.module';
@@ -132,7 +133,7 @@ import { SandboxModule } from './sandbox/sandbox.module';
     ]),
   ],
 
-  controllers: [AppController],
+  controllers: [AppController, WebhookController],
   providers: [
     AppService,
     {
